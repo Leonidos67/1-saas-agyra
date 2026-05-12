@@ -1,126 +1,122 @@
 import React, { useState } from 'react';
-import { Ticket } from '../../types';
-import TicketTable from '../Dashboard/TicketTable';
-import TicketDetails from '../DetailsPanel/TicketDetails';
-import FiltersPanel from '../Dashboard/FiltersPanel';
-import FilterButton from '../Common/FilterButton';
 import SearchBar from '../Common/SearchBar';
 
-interface TicketsLayoutProps {
-  selectedTicket: Ticket | null;
-  onTicketSelect: (ticket: Ticket) => void;
-  activeFilters?: {
-    view?: string;
-    category?: string;
-    priority?: string;
-  };
-  onFilterChange?: (filterType: string, filterValue: string) => void;
-}
+const TicketsLayout: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
 
-const TicketsLayout: React.FC<TicketsLayoutProps> = ({ 
-  selectedTicket, 
-  onTicketSelect,
-  activeFilters = { view: 'all', category: '', priority: '' },
-  onFilterChange = () => {}
-}) => {
-  const [showFilters, setShowFilters] = useState(false);
+  const communities = [
+    {
+      id: 1,
+      name: "Alpha Trading Vault",
+      handle: "@alphatrading",
+      description: "Premium futures & technical analysis signals",
+      members: 12480,
+      category: "Futures",
+      avatar: "https://i.pravatar.cc/150?img=3",
+      isVerified: true,
+    },
+    {
+      id: 2,
+      name: "Memecoin Hunters",
+      handle: "@memehunters",
+      description: "Early calls on Solana memecoins",
+      members: 8730,
+      category: "Memecoins",
+      avatar: "https://i.pravatar.cc/150?img=45",
+      isVerified: false,
+    },
+    {
+      id: 3,
+      name: "On-Chain Alpha",
+      handle: "@onchainalpha",
+      description: "Smart money tracking & wallet analysis",
+      members: 5420,
+      category: "On-Chain",
+      avatar: "https://i.pravatar.cc/150?img=67",
+      isVerified: true,
+    },
+    {
+      id: 4,
+      name: "Airdrop University",
+      handle: "@airdropuni",
+      description: "Best airdrop farming strategies",
+      members: 15900,
+      category: "Airdrops",
+      avatar: "https://i.pravatar.cc/150?img=12",
+      isVerified: true,
+    },
+  ];
 
-  const activeFiltersCount = Object.values(activeFilters).filter(value => value !== '').length;
+  const filteredCommunities = communities.filter(community =>
+    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex h-full">
-        {/* Main Table Area */}
-        <div className="w-2/3 pr-0 flex flex-col border-r border-neutral-200">
-          <div className="flex flex-col h-full">
-            {/* Search and Filter Controls */}
-            <div className="p-4 bg-white border-b border-neutral-200 flex items-center gap-4">
-              <div className="flex-1 max-w-md">
-                <SearchBar placeholder="Поиск заявок..." />
-              </div>
-              <FilterButton 
-                onClick={() => setShowFilters(!showFilters)}
-                activeFiltersCount={activeFiltersCount}
-              />
-            </div>
-            
-            {/* Filters Panel - shown when filter button is clicked */}
-            {showFilters && (
-              <div className="p-4 bg-white border-b border-neutral-200">
-                <FiltersPanel 
-                  activeFilters={activeFilters}
-                  onFilterChange={onFilterChange}
-                />
-              </div>
-            )}
-            
-            {/* Main Content Area with Ticket Table and Footer */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-auto">
-                <TicketTable onTicketSelect={onTicketSelect} selectedTicket={selectedTicket} />
-              </div>
-              
-              {/* Footer with Filter Options */}
-              <div className="flex-shrink-0 bg-neutral-50 border-t border-neutral-200 py-4">
-                <div className="mx-auto w-fit">
-                  <div className="bg-white border border-neutral-200 rounded-xl shadow-sm px-4 py-3">
-                    <div className="flex flex-wrap justify-center gap-2">
-                      <button
-                        onClick={() => onFilterChange('view', 'all')}
-                        className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 hover:bg-neutral-100 transition-colors"
-                      >
-                        Все заявки
-                      </button>
-
-                      <button
-                        onClick={() => onFilterChange('view', 'new')}
-                        className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 hover:bg-neutral-100 transition-colors"
-                      >
-                        Новые
-                      </button>
-
-                      <button
-                        onClick={() => onFilterChange('view', 'open')}
-                        className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 hover:bg-neutral-100 transition-colors"
-                      >
-                        Открытые
-                      </button>
-
-                      <button
-                        onClick={() => onFilterChange('view', 'pending')}
-                        className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 hover:bg-neutral-100 transition-colors"
-                      >
-                        В ожидании
-                      </button>
-
-                      <button
-                        onClick={() => onFilterChange('view', 'resolved')}
-                        className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 hover:bg-neutral-100 transition-colors"
-                      >
-                        Решенные
-                      </button>
-
-                      <button
-                        onClick={() => onFilterChange('view', 'escalated')}
-                        className="px-3 py-1.5 text-sm font-medium rounded-md border border-neutral-300 hover:bg-neutral-100 transition-colors"
-                      >
-                        Эскалированные
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Right Details Panel */}
-        <div className="w-1/3 pl-0 flex flex-col">
-          <div className="flex-1 overflow-auto">
-            <TicketDetails ticket={selectedTicket} />
-          </div>
-        </div>
+    <div className=" mx-auto px-0 py-0">
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold text-gray-900">Discover</h1>
+        <p className="text-gray-600 mt-1">Find communities and creators worth following</p>
       </div>
+
+      {/* Search Bar */}
+      <div className="mb-10">
+        <SearchBar 
+          value={searchQuery} 
+          onChange={setSearchQuery} 
+          placeholder="Search communities, traders, or keywords..." 
+        />
+      </div>
+
+      {/* Communities Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCommunities.map((community) => (
+          <div
+            key={community.id}
+            className="bg-white border border-gray-200 rounded-3xl p-6 hover:border-gray-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div className="flex items-start gap-4">
+              <img
+                src={community.avatar}
+                alt={community.name}
+                className="w-14 h-14 rounded-2xl"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-lg truncate">{community.name}</h3>
+                  {community.isVerified && <span className="text-blue-500">✓</span>}
+                </div>
+                <p className="text-gray-500 text-sm">{community.handle}</p>
+                <p className="text-sm text-gray-600 mt-3 line-clamp-2">
+                  {community.description}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-500">Members</p>
+                <p className="font-semibold text-gray-900">
+                  {community.members.toLocaleString()}
+                </p>
+              </div>
+              <span className="text-xs font-medium px-4 py-1.5 bg-gray-100 rounded-2xl">
+                {community.category}
+              </span>
+            </div>
+
+            <button className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl transition-colors">
+              Join Community
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {filteredCommunities.length === 0 && (
+        <div className="text-center py-20 text-gray-500">
+          No communities found for "{searchQuery}"
+        </div>
+      )}
     </div>
   );
 };

@@ -23,10 +23,10 @@ const TicketsPage: React.FC = () => {
       title={selectedTicket ? `#${selectedTicket.ticketId} - ${selectedTicket.title}` : "Все заявки"}
     >
       <TicketsLayout 
-        selectedTicket={selectedTicket} 
-        onTicketSelect={setSelectedTicket} 
-        activeFilters={activeFilters}
-        onFilterChange={handleFilterChange}
+        // selectedTicket={selectedTicket} 
+        // onTicketSelect={setSelectedTicket} 
+        // activeFilters={activeFilters}
+        // onFilterChange={handleFilterChange}
       />
     </AppLayout>
   );

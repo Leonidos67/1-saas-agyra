@@ -1,208 +1,276 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import AppLayout from '../Layout/AppLayout';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  LineChart,
-  Line
-} from 'recharts';
+import { MessageCircle, Heart, Repeat2, Bookmark, Share, ArrowLeft, X } from 'lucide-react';
+
+interface Post {
+  id: number;
+  author: string;
+  avatar: string;
+  handle: string;
+  time: string;
+  content: string;
+  image?: string;
+  likes: number;
+  reposts: number;
+  comments: number;
+  type: 'signal' | 'post' | 'lecture';
+  ticker?: string;
+}
+
+const mockPosts: Post[] = [
+  {
+    id: 1,
+    author: "0xVitalik",
+    avatar: "https://i.pravatar.cc/150?img=1",
+    handle: "@0xVitalik",
+    time: "12m",
+    content: "BTC готовится к прорыву $112k. На дневном графике формируется бычий флаг. Цель — $118k-$122k в ближайшие 3-4 недели.",
+    image: "https://picsum.photos/id/1015/800/450",
+    likes: 1240,
+    reposts: 234,
+    comments: 87,
+    type: "signal",
+    ticker: "BTC"
+  },
+  {
+    id: 2,
+    author: "CryptoWhale",
+    avatar: "https://i.pravatar.cc/150?img=68",
+    handle: "@CryptoWhale",
+    time: "47m",
+    content: "Зашёл в SOL long с левериджем 15x. Entry 178.40$. TP1 185$, TP2 192$. SL 172$.",
+    likes: 342,
+    reposts: 98,
+    comments: 54,
+    type: "signal",
+    ticker: "SOL"
+  },
+  {
+    id: 3,
+    author: "Alpha Analyst",
+    avatar: "https://i.pravatar.cc/150?img=12",
+    handle: "@AlphaAnalyst",
+    time: "2h",
+    content: "Подробный разбор токеномики LayerZero V2. Почему токен может сделать x8–12 при успешном запуске.",
+    image: "https://picsum.photos/id/237/800/450",
+    likes: 678,
+    reposts: 145,
+    comments: 92,
+    type: "lecture"
+  },
+];
 
 const MainDashboard: React.FC = () => {
-  // Mock data for charts
-  const ticketData = [
-    { name: 'Пн', открытые: 4000, решенные: 2400 },
-    { name: 'Вт', открытые: 3000, решенные: 1398 },
-    { name: 'Ср', открытые: 2000, решенные: 9800 },
-    { name: 'Чт', открытые: 2780, решенные: 3908 },
-    { name: 'Пт', открытые: 1890, решенные: 4800 },
-    { name: 'Сб', открытые: 2390, решенные: 3800 },
-    { name: 'Вс', открытые: 3490, решенные: 4300 },
-  ];
-  
-  const categoryData = [
-    { name: 'Тех. поддержка', value: 400 },
-    { name: 'Оплата', value: 300 },
-    { name: 'Функции', value: 300 },
-    { name: 'Ошибки', value: 200 },
-    { name: 'Аккаунт', value: 100 },
-  ];
-  
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-  
-  const agentPerformanceData = [
-    { name: 'Алекс', performance: 85 },
-    { name: 'Елена', performance: 92 },
-    { name: 'Анна', performance: 78 },
-    { name: 'Дмитрий', performance: 95 },
-    { name: 'ИИ-бот', performance: 88 },
-  ];
-  
-  const satisfactionData = [
-    { name: 'Янв', satisfaction: 85 },
-    { name: 'Фев', satisfaction: 87 },
-    { name: 'Мар', satisfaction: 83 },
-    { name: 'Апр', satisfaction: 90 },
-    { name: 'Май', satisfaction: 88 },
-    { name: 'Июн', satisfaction: 92 },
-  ];
-  
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'everyone' | 'following' | 'communities'>('everyone');
+
   return (
-    <AppLayout title="Панель управления">
-      <div>
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900">Панель поддержки ИИ</h1>
-          <p className="text-neutral-600">Добро пожаловать в систему ИИ-агента поддержки Qoder</p>
-        </div>
+    <AppLayout title="Home">
+      <div className="max-w-[1200px] mx-auto flex gap-6">
+        
+        {/* Центральная колонка */}
+        <div className="flex-1 max-w-[620px]">
+          
+          {/* Табы фильтрации постов */}
+          <div className="flex gap-2 mb-6 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('everyone')}
+              className={`px-6 py-2 font-medium transition-all ${
+                activeTab === 'everyone' 
+                  ? 'bg-black/5' 
+                  : 'text-black'
+              }`}
+            >
+              Everyone
+            </button>
+            <button
+              onClick={() => setActiveTab('following')}
+              className={`px-6 py-2 font-medium transition-all ${
+                activeTab === 'following' 
+                  ? 'bg-black/5' 
+                  : 'text-black'
+              }`}
+            >
+              Following
+            </button>
+            <button
+              onClick={() => setActiveTab('communities')}
+              className={`px-6 py-2 font-medium transition-all ${
+                activeTab === 'communities' 
+                  ? 'bg-black/5' 
+                  : 'text-black'
+              }`}
+            >
+              My Communities
+            </button>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="font-semibold text-neutral-900 mb-2">Всего заявок</h3>
-            <p className="text-3xl font-bold text-primary-600">24</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="font-semibold text-neutral-900 mb-2">Открытые заявки</h3>
-            <p className="text-3xl font-bold text-yellow-500">12</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="font-semibold text-neutral-900 mb-2">Решено сегодня</h3>
-            <p className="text-3xl font-bold text-green-500">8</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="font-semibold text-neutral-900 mb-2">Удовлетворенность</h3>
-            <p className="text-3xl font-bold text-blue-500">92%</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Заявки по дням</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={ticketData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="открытые" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                  <Area type="monotone" dataKey="решенные" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-                </AreaChart>
-              </ResponsiveContainer>
+          {/* Кнопка создания поста */}
+          {!isCreateOpen ? (
+            <div 
+              onClick={() => setIsCreateOpen(true)}
+              className="bg-white border border-gray-200 hover:border-gray-300 rounded-3xl p-4 mb-6 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:shadow"
+            >
+              <div className="w-11 h-11 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-3xl font-light">
+                +
+              </div>
+              <div>
+                <p className="font-medium text-gray-800">Create a post</p>
+                <p className="text-sm text-gray-500">Share signals, thoughts or analysis</p>
+              </div>
             </div>
+          ) : (
+            /* Блок создания поста */
+            <div className="bg-white border border-gray-200 rounded-3xl p-6 mb-4 shadow-sm relative">
+              <button
+                onClick={() => setIsCreateOpen(false)}
+                className="absolute top-5 right-5 text-gray-400 hover:text-gray-700"
+              >
+                <X size={26} />
+              </button>
+
+              <div className="flex gap-4">
+                <textarea
+                  placeholder="Drop something worth talking about..."
+                  className="flex-1 bg-transparent text-[17px] placeholder-gray-400 focus:outline-none resize-none min-h-[110px] mt-1"
+                />
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-gray-100">
+                <button className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl transition-colors">
+                  Post
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Лента постов */}
+          <div className="space-y-6">
+            {mockPosts.map((post) => (
+              <div
+                key={post.id}
+                onClick={() => setSelectedPost(post)}
+                className="bg-white border border-gray-200 rounded-3xl p-6 hover:border-gray-300 hover:shadow transition-all cursor-pointer"
+              >
+                <div className="flex gap-4">
+                  <img
+                    src={post.avatar}
+                    alt={post.author}
+                    className="w-11 h-11 rounded-full flex-shrink-0"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-900">{post.author}</span>
+                      <span className="text-gray-500">{post.handle}</span>
+                      <span className="text-gray-400">·</span>
+                      <span className="text-gray-500">{post.time}</span>
+                    </div>
+
+                    {post.ticker && (
+                      <span className="inline-block mt-1 px-3 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-full">
+                        {post.ticker}
+                      </span>
+                    )}
+
+                    <p className="mt-3 text-[15.5px] leading-relaxed text-gray-800">
+                      {post.content}
+                    </p>
+
+                    {post.image && (
+                      <img
+                        src={post.image}
+                        className="mt-4 rounded-2xl w-full"
+                        alt="post"
+                      />
+                    )}
+
+                    {/* === ИЗМЕНЁННЫЙ БЛОК ДЕЙСТВИЙ === */}
+                    <div className="flex items-center justify-start gap-8 mt-6 text-gray-500">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); alert('Comment'); }}
+                        className="flex items-center gap-2 hover:text-blue-600 transition-colors"
+                      >
+                        <MessageCircle size={20} /> 
+                        <span>{post.comments}</span>
+                      </button>
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); alert('Repost'); }}
+                        className="flex items-center gap-2 hover:text-green-600 transition-colors"
+                      >
+                        <Repeat2 size={20} /> 
+                        <span>{post.reposts}</span>
+                      </button>
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); alert('Like'); }}
+                        className="flex items-center gap-2 hover:text-red-600 transition-colors"
+                      >
+                        <Heart size={20} /> 
+                        <span>{post.likes}</span>
+                      </button>
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); alert('Bookmark'); }}
+                        className="hover:text-gray-700 transition-colors"
+                      >
+                        <Bookmark size={20} />
+                      </button>
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); alert('Share'); }}
+                        className="hover:text-gray-700 transition-colors"
+                      >
+                        <Share size={20} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Категории заявок</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${Math.round(percent! * 100)}%`}
+        </div>
+
+        {/* Правый блок */}
+        <div className="w-[380px] hidden lg:block">
+          <div className="sticky top-6 h-[calc(100vh-110px)] flex flex-col">
+            {selectedPost ? (
+              <div className="bg-white border border-gray-200 rounded-3xl shadow-sm flex-1 flex flex-col overflow-hidden">
+                <div className="p-5 border-b">
+                  <button
+                    onClick={() => setSelectedPost(null)}
+                    className="flex items-center gap-2 text-gray-500 hover:text-gray-900"
                   >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Производительность агентов</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={agentPerformanceData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="performance" name="Производительность (%)" fill="#8884d8" />
-                  <Tooltip formatter={(value) => [`${value}%`, 'Производительность']} />
-                  <Legend />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Удовлетворенность клиентов</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={satisfactionData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[80, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="satisfaction" name="Удовлетворенность (%)" stroke="#8884d8" activeDot={{ r: 8 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Недавняя активность</h2>
-            <Link to="/app" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-              Просмотр всех заявок →
-            </Link>
-          </div>
-          <p className="text-neutral-600">Недавние заявки с анализом ИИ и рекомендациями</p>
-        </div>
+                    <ArrowLeft size={18} />
+                    Back to feed
+                  </button>
+                </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-neutral-200">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4">Статус ИИ-агента поддержки</h2>
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-              <span className="text-neutral-700">Движок анализа ИИ: Активен</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-              <span className="text-neutral-700">Классификация заявок: Онлайн</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-              <span className="text-neutral-700">Система рекомендаций: Работает</span>
-            </div>
+                <div className="p-6 flex-1 overflow-auto">
+                  <p className="text-[15.5px] leading-relaxed text-gray-800">
+                    {selectedPost.content}
+                  </p>
+                  {selectedPost.image && (
+                    <img src={selectedPost.image} className="mt-5 rounded-2xl" alt="" />
+                  )}
+                </div>
+
+                <div className="p-6 border-t bg-gray-50 flex-1 overflow-auto">
+                  <h3 className="font-medium mb-4">Comments ({selectedPost.comments})</h3>
+                  <div className="space-y-5 text-sm">
+                    <div>
+                      <span className="font-medium">@smartmoneyflow</span>
+                      <p className="text-gray-600 mt-1">Very strong analysis</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white border border-gray-200 rounded-3xl p-8 text-center h-full flex flex-col justify-center">
+                <p className="text-gray-500">Select a post to view the thread</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
