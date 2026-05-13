@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link, useLocation } from 'react-router-dom';
-import { House, Compass, Users, Plus, Bolt } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { House, Compass, Users, Plus, LogOut, LogIn } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
-
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const navItems = [
     { name: 'Home', icon: House, path: '/' },
@@ -15,6 +15,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col h-full">
+      {/* Logo */}
       <div className="p-2 border-b border-neutral-200 active:scale-[0.99] duration-200">
         <Link to={"/"} className="flex items-center gap-2 text-2xl font-bold text-gray-900 ">
           <img 
@@ -49,8 +50,8 @@ const Sidebar: React.FC = () => {
         </ul>
 
         {/* My Communities */}
-        <div className="mt-4 px-2">
-          <div className="flex items-center justify-between mb-2">
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2 px-2">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">My Communities</h2>
           </div>
 
@@ -64,25 +65,40 @@ const Sidebar: React.FC = () => {
             </Link>
           </div>
 
-          <button onClick={() => navigate("/new")}  className="mt-2 w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-xl hover:rounded-2xl transition-colors">
+          <button 
+            onClick={() => navigate("/new")}
+            className="mt-2 w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-xl hover:rounded-2xl transition-colors"
+          >
             <Plus className="w-5 h-5" />
             Start a Community
           </button>
         </div>
       </nav>
 
-      {/* User section */}
+      {/* User section — кликабельный профиль */}
       <div className="p-2 border-t border-neutral-200">
-        <div className="flex items-center gap-2 px-2 py-1 border rounded-xl hover:bg-neutral-100 cursor-pointer">
-          <div className="w-8 h-8 bg-gradient-to-r from-[#fef08a] via-[#84cc16] to-[#16a34a] rounded-full flex items-center justify-center text-white font-bold">
-            L
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">Leonid</p>
-            <p className="text-xs text-neutral-500">@malvinalord</p>
-          </div>
-          <Bolt className="w-5 h-5 text-neutral-500" />
-        </div>
+        {user ? (
+          <Link
+            to={user.username ? `/@${user.username}` : '/settings'}
+            className="flex items-center gap-2 px-2 py-1 border rounded-xl hover:bg-neutral-100 cursor-pointer transition-all active:scale-[0.98]"
+          >
+            <div className="w-8 h-8 bg-gradient-to-r from-[#fef08a] via-[#84cc16] to-[#16a34a] rounded-full flex items-center justify-center text-white font-bold">
+              {user.fullName?.charAt(0) || user.username?.charAt(0) || 'U'}
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">{user.username || 'User'}</p>
+              <p className="text-xs text-neutral-500">@{user.email?.split('@')[0] || 'user'}</p>
+            </div>
+          </Link>
+        ) : (
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('openLogin'))}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-neutral-300 rounded-xl hover:bg-neutral-100 transition-colors"
+          >
+            <LogIn className="w-5 h-5" />
+            <span className="font-medium">Sign in</span>
+          </button>
+        )}
       </div>
     </div>
   );

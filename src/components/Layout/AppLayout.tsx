@@ -2,6 +2,7 @@
 import React, { ReactNode, useRef, useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useLocation } from 'react-router-dom';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -11,6 +12,9 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   const headerRef = useRef<HTMLDivElement>(null);
   const [mainHeight, setMainHeight] = useState('auto');
+  const location = useLocation();
+
+  console.log('Current path:', location.pathname);
 
   useEffect(() => {
     const updateHeight = () => {
