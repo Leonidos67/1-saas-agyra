@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { House, Compass, Users, Plus, LogOut, Bold, Bolt } from 'lucide-react';
+import { House, Compass, Users, Plus, Bolt } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();

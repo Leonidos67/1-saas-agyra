@@ -1,18 +1,12 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  Home,
   Plus,
   Search,
-  MoreHorizontal,
-  Shield,
   Bell,
   UserPlus,
   Copy,
-  MessageCircle,
   Package,
-  Info,
-  House,
   HouseHeart,
 } from "lucide-react";
 

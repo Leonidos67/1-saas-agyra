@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Heart, Repeat2, Bookmark, Share, ArrowLeft, X, MoreHorizontal } from 'lucide-react';
+import { MessageCircle, Heart, Repeat2, X } from 'lucide-react';
 
 const Home: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
