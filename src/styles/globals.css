@@ -12,6 +12,30 @@ body {
   overflow: hidden;
 }
 
+/* index.css или App.css */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+/* Добавьте после импорта Tailwind */
+.pixelify-logo {
+  font-family: "Archivo Black", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* Custom scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

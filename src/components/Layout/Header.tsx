@@ -1,30 +1,36 @@
+// components/Layout/Header.tsx
 import React from 'react';
-import { MagnifyingGlassIcon, BellIcon, QuestionMarkCircleIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Bell, MessageCircle, User } from 'lucide-react';
 import SearchBar from '../Common/SearchBar';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
-  title?: string;
+  onSearch?: (query: string, category?: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ title = "Все заявки" }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   return (
-    <header className="bg-neutral-50 py-2 px-6 flex items-center justify-between">
-      <div className="flex items-center">
-        <h1 className="text-xl font-semibold text-neutral-800">{title}</h1>
+    <header className="bg-neutral-50 px-6 flex items-center justify-between flex-shrink-0 h-[60px]">
+      <div className="flex-1 max-w-2xl">
+        <SearchBar 
+          onSearch={onSearch}
+          placeholder="Search for communities, businesses, or people..."
+        />
       </div>
       
-      <div className="flex items-center space-x-4">
-        <button className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg">
-          <BellIcon className="h-5 w-5" />
+      <div className="flex items-center space-x-2 ml-4">
+        <Link to={"/messenger"} className="p-2 text-neutral-600 border hover:text-neutral-700 hover:bg-black/10 rounded-full active:scale-[0.95] transition-all">
+          <MessageCircle className="h-5 w-5" />
+        </Link>
+        <button className="p-2 text-neutral-600 border hover:text-neutral-700 hover:bg-black/10 rounded-full active:scale-[0.95] transition-all">
+          <Bell className="h-5 w-5" />
         </button>
-        
-        <button className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg">
-          <QuestionMarkCircleIcon className="h-5 w-5" />
+        <button className="p-2 text-neutral-600 border hover:text-neutral-700 hover:bg-black/10 rounded-full active:scale-[0.95] transition-all">
+          <User className="h-5 w-5" />
         </button>
-        
-        <button className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg">
-          <Cog6ToothIcon className="h-5 w-5" />
-        </button>
+        <Link to={"/dashboard"} className="text-neutral-600 border hover:text-neutral-700 hover:bg-black/10 rounded-full px-4 py-2 active:scale-[0.95] transition-all">
+          Dashboard
+        </Link>
       </div>
     </header>
   );

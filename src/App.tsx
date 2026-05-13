@@ -1,27 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainDashboard from './components/Dashboard/MainDashboard';
-import TicketsPage from './pages/TicketsPage';
-import CustomersPage from './pages/CustomersPage';
-import ReportsPage from './pages/ReportsPage';
-import SettingsPage from './pages/SettingsPage';
-import AIAgentPage from './pages/AIAgentPage';
-import EmployeesPage from './pages/EmployeesPage';
+import AppLayout from './components/Layout/AppLayout';
 
-const App: React.FC = () => {
+import Home from './pages/Home';
+import Discover from './pages/Discover';
+import CommunityPage from './pages/CommunityPage';
+
+import LoginModal from './components/Auth/LoginModal';
+import RegisterModal from './components/Auth/RegisterModal';
+import NewPage from './components/Community/New';
+import NewPersonal from './components/Community/NewPersonal';
+import NewBusiness from './components/Community/NewBusiness';
+import Messenger from './pages/Messenger';
+
+function App() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainDashboard />} />
-        <Route path="/app" element={<TicketsPage />} />
-        <Route path="/customers" element={<CustomersPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/ai-agent" element={<AIAgentPage />} />
-        <Route path="/employees" element={<EmployeesPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/" element={<AppLayout><Home /></AppLayout>} />
+        <Route path="/discover" element={<AppLayout><Discover /></AppLayout>} />
+        <Route path="/community/:handle" element={<AppLayout><CommunityPage /></AppLayout>} />
+        <Route path="/new" element={<AppLayout><NewPage /></AppLayout>} />
+        <Route path="/new/personal" element={<AppLayout><NewPersonal /></AppLayout>} />
+        <Route path="/new/business" element={<AppLayout><NewBusiness /></AppLayout>} />
+
+        <Route path="/messenger" element={<AppLayout><Messenger /></AppLayout>} />
+
+        {/* <Route path="/new/personal" element={<PersonalPage />} />
+        <Route path="/new/business" element={<BusinessPage />} /> */}
+        {/* <Route path="/new" element={<NewPage />} /> */}
       </Routes>
+
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        onSwitchToRegister={() => {
+          setIsLoginOpen(false);
+          setIsRegisterOpen(true);
+        }} 
+      />
+
+      <RegisterModal 
+        isOpen={isRegisterOpen} 
+        onClose={() => setIsRegisterOpen(false)} 
+        onSwitchToLogin={() => {
+          setIsRegisterOpen(false);
+          setIsLoginOpen(true);
+        }} 
+      />
     </Router>
   );
-};
+}
 
 export default App;

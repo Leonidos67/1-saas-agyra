@@ -1,4 +1,5 @@
-import React, { ReactNode } from 'react';
+// components/Layout/AppLayout.tsx
+import React, { ReactNode, useRef, useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
@@ -8,16 +9,44 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [mainHeight, setMainHeight] = useState('auto');
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (headerRef.current) {
+        const headerHeight = headerRef.current.offsetHeight;
+        setMainHeight(`calc(100vh - ${headerHeight}px)`);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    
+    // Наблюдаем за изменениями в DOM
+    const observer = new ResizeObserver(updateHeight);
+    if (headerRef.current) {
+      observer.observe(headerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="flex h-screen bg-neutral-50">
+    <div className="flex h-screen bg-neutral-50 overflow-hidden">
       {/* Left Sidebar */}
       <Sidebar />
       
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Header title={title} />
-        <main className="flex-1 overflow-auto">
-          <div className="h-full bg-white rounded-3xl border-0 overflow-auto p-6">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <div ref={headerRef}>
+          <Header />
+        </div>
+        <main style={{ height: mainHeight }} className="overflow-hidden">
+          <div className="h-full bg-white rounded-3xl border-0 overflow-auto">
             {children}
           </div>
         </main>

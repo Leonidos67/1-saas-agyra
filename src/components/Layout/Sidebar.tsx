@@ -1,100 +1,89 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Compass,
-  LogOut,
-  HouseHeart,
-  SendHorizontal,
-  Plus,
-  Users as UsersIcon
-} from 'lucide-react';
-import { View } from '../../types';
-import { mockViews } from '../../data/mockData';
+import { House, Compass, Users, Plus, LogOut, Bold, Bolt } from 'lucide-react';
 
-interface SidebarProps {
-  views?: View[];
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ views = mockViews }) => {
+const Sidebar: React.FC = () => {
   const location = useLocation();
-  const [ setExpandedSections] = useState<Record<string, boolean>>({
-    tickets: true,
-    views: true,
-    categories: false,
-    priorities: false,
-    communities: true
-  });
+
+  const navigate = useNavigate();
 
   const navItems = [
-    { name: 'Home', icon: HouseHeart, path: '/' },
-    { name: 'Discover', icon: Compass, path: '/app' },
-    { name: 'Airdrop Hub', icon: SendHorizontal, path: '/ai-agent' },
-  ];
-
-  // Пример сообществ (можно заменить на реальные данные)
-  const myCommunities = [
-    { name: 'Web3 Innovators', members: 234, path: '/community/web3' },
+    { name: 'Home', icon: House, path: '/' },
+    { name: 'Discover', icon: Compass, path: '/discover' },
   ];
 
   return (
-    <div className="w-64 bg-neutral-50 flex flex-col h-full">
+    <div className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col h-full">
+      <div className="p-2 border-b border-neutral-200 active:scale-[0.99] duration-200">
+        <Link to={"/"} className="flex items-center gap-2 text-2xl font-bold text-gray-900 ">
+          <img 
+            src="https://img.icons8.com/?size=100&id=ck3ZwyamgGAW&format=png&color=000000"
+            className="w-8 h-8"
+            alt=""
+          />
+          <span className="pixelify-logo">
+            MNOONX
+          </span>
+        </Link>
+      </div>
+
       {/* Navigation */}
-      <nav className="flex-1 py-2 overflow-y-auto">
-        <ul className="space-y-1 px-2">
+      <nav className="flex-1 p-2">
+        <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.name}>
               <Link
                 to={item.path}
-                className={`flex items-center p-3 rounded-xl transition-all duration-200 active:bg-black/10 active:scale-95 ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all active:scale-[0.95] ${
                   location.pathname === item.path
-                    ? 'bg-black/10 font-semibold' 
+                    ? 'bg-black/10'
                     : 'hover:bg-black/5'
-                  }`}
+                }`}
               >
-                <item.icon className="h-5 w-5 mr-3" />
-                <span>{item.name}</span>
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium">{item.name}</span>
               </Link>
             </li>
           ))}
         </ul>
 
-        {/* My Communities Section */}
-        <div className="mt-2 px-2">
-          <div className="flex items-center justify-between px-2 py-2">
-            <h2 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              My Communities
-            </h2>
+        {/* My Communities */}
+        <div className="mt-4 px-2">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">My Communities</h2>
           </div>
 
-          {/* Communities List */}
-          <ul className="mt-1 space-y-1">
-            {myCommunities.map((community) => (
-              <li key={community.name}>
-                <Link
-                  to={community.path}
-                  className={`flex items-center justify-between p-2 rounded-xl hover:bg-black/5 transition-colors ${
-                    location.pathname === community.path ? 'bg-black/10 font-medium' : ''
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className='bg-black/10 p-1 rounded-md mr-2'>
-                      <UsersIcon className="h-4 w-4 text-neutral-500" />
-                    </div>
-                    <span className="text-sm">{community.name}</span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-1">
+            <Link
+              to="/community/web3-innovators"
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl hover:bg-neutral-100 text-neutral-700"
+            >
+              <Users className="w-4 h-4" />
+              <span>Web3 Innovators</span>
+            </Link>
+          </div>
 
-          {/* Start a Community Button */}
-          <button className="mt-2 flex items-center px-3 py-1 rounded-md transition-colors bg-black text-white font-semibold">
-            <Plus className="h-4 w-4 mr-1" />
-            <span>Start a Community</span>
+          <button onClick={() => navigate("/new")}  className="mt-2 w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-xl hover:rounded-2xl transition-colors">
+            <Plus className="w-5 h-5" />
+            Start a Community
           </button>
         </div>
-        
       </nav>
+
+      {/* User section */}
+      <div className="p-2 border-t border-neutral-200">
+        <div className="flex items-center gap-2 px-2 py-1 border rounded-xl hover:bg-neutral-100 cursor-pointer">
+          <div className="w-8 h-8 bg-gradient-to-r from-[#fef08a] via-[#84cc16] to-[#16a34a] rounded-full flex items-center justify-center text-white font-bold">
+            L
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-sm">Leonid</p>
+            <p className="text-xs text-neutral-500">@malvinalord</p>
+          </div>
+          <Bolt className="w-5 h-5 text-neutral-500" />
+        </div>
+      </div>
     </div>
   );
 };
