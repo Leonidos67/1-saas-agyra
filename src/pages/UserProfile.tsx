@@ -7,11 +7,8 @@ import {
   MessageCircle, Repeat2, Heart,
   MoreHorizontal, Share,
   Search, Image, Smile, Send, X,
-  Pin,
   Pen,
   Trash,
-  Copy,
-  Unlink,
   Unlink2
 } from 'lucide-react';
 
@@ -77,7 +74,7 @@ const UserProfileComponent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'highlights' | 'media'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'media'>('posts');
   const [searchFollower, setSearchFollower] = useState('');
 
   const [newPostContent, setNewPostContent] = useState('');
@@ -509,7 +506,7 @@ const UserProfileComponent: React.FC = () => {
 
         {/* Tabs */}
         <div className="flex border-b border-neutral-200">
-          {[{ id: 'posts', label: 'Posts' }, { id: 'replies', label: 'Replies' }, { id: 'highlights', label: 'Highlights' }, { id: 'media', label: 'Media' }].map((tab) => (
+          {[{ id: 'posts', label: 'Posts' }, { id: 'replies', label: 'Replies' }, { id: 'media', label: 'Media' }].map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
               className={`flex-1 py-2 text-sm font-medium text-center hover:bg-neutral-50 transition-colors relative ${activeTab === tab.id ? 'text-neutral-900 bg-neutral-50' : 'text-neutral-500'}`}>
               {tab.label}
@@ -565,7 +562,7 @@ const UserProfileComponent: React.FC = () => {
           <div>
             {posts.length > 0 ? posts.map(post => (
               <article key={post._id} className="p-4 hover:bg-neutral-50 transition-colors border-b border-neutral-200 group/article">
-                <div className="flex space-x-3" onClick={() => navigate(`/post/${post._id}`)}>
+                <div className="flex space-x-3 cursor-pointer" onClick={() => navigate(`/post/${post._id}`)}>
                   <img src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.fullName}&background=000&color=fff&size=40&bold=true`}
                     alt={post.author.fullName} className="w-10 h-10 rounded-full hover:opacity-90 transition-opacity cursor-pointer" />
                   <div className="flex-1 min-w-0">
@@ -629,22 +626,18 @@ const UserProfileComponent: React.FC = () => {
                       </div>
                     )}
                     <div className="flex items-center gap-1 mt-3 max-w-md">
-                      <button onClick={(e) => { e.stopPropagation(); navigate(`/post/${post._id}`); }} className="flex items-center gap-1 text-neutral-500 hover:text-blue-500 transition-colors group">
+                      <button onClick={(e) => { e.stopPropagation(); handleLike(post._id); }}
+                      className={`flex items-center transition-colors group ${likedPosts.has(post._id) ? 'text-red-500' : 'text-neutral-500 hover:text-red-500'}`}>
+                          <div className="p-2 rounded-full group-hover:bg-red-50 transition-colors"><Heart size={18} fill={likedPosts.has(post._id) ? 'currentColor' : 'none'} /></div>
+                          <span className="text-sm">{formatCount(post.likesCount || 0)}</span>
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/post/${post._id}`); }} className="flex items-center text-neutral-500 hover:text-blue-500 transition-colors group">
                         <div className="p-2 rounded-full group-hover:bg-blue-50 transition-colors"><MessageCircle size={18} /></div>
                         <span className="text-sm">{formatCount(post.commentsCount || 0)}</span>
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); handleRepost(post._id); }}
-                        className={`flex items-center gap-1 transition-colors group ${repostedPosts.has(post._id) ? 'text-green-500' : 'text-neutral-500 hover:text-green-500'}`}>
+                        className={`flex items-center transition-colors group ${repostedPosts.has(post._id) ? 'text-green-500' : 'text-neutral-500 hover:text-green-500'}`}>
                         <div className="p-2 rounded-full group-hover:bg-green-50 transition-colors"><Repeat2 size={18} fill={repostedPosts.has(post._id) ? 'currentColor' : 'none'} /></div>
-                        <span className="text-sm">{formatCount(post.repostsCount || 0)}</span>
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleLike(post._id); }}
-                        className={`flex items-center gap-1 transition-colors group ${likedPosts.has(post._id) ? 'text-red-500' : 'text-neutral-500 hover:text-red-500'}`}>
-                        <div className="p-2 rounded-full group-hover:bg-red-50 transition-colors"><Heart size={18} fill={likedPosts.has(post._id) ? 'currentColor' : 'none'} /></div>
-                        <span className="text-sm">{formatCount(post.likesCount || 0)}</span>
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); copyPostLink(post._id); }} className="flex items-center gap-1 text-neutral-500 hover:text-blue-500 transition-colors group">
-                        <div className="p-2 rounded-full group-hover:bg-blue-50 transition-colors"><Share size={18} /></div>
                       </button>
                     </div>
                   </div>
@@ -681,9 +674,6 @@ const UserProfileComponent: React.FC = () => {
                       <p className="text-sm text-neutral-500 truncate">@{follower.username}</p>
                     </div>
                   </div>
-                  {user?.username !== follower.username && (
-                    <button className="px-4 py-1.5 bg-black text-white rounded-full text-sm font-semibold hover:bg-neutral-800 transition-colors flex-shrink-0 ml-2">Follow</button>
-                  )}
                 </Link>
               )) : (
                 <div className="text-center py-8"><p className="text-neutral-500 text-sm">{searchFollower ? 'No followers found' : 'No followers yet'}</p></div>

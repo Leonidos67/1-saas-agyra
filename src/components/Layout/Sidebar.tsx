@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { House, Compass, Users, Plus, LogOut, LogIn } from 'lucide-react';
+import { House, Compass, Users, Plus, LogIn, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar: React.FC = () => {
@@ -10,6 +10,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { name: 'Home', icon: House, path: '/' },
+    { name: 'Profile', icon: User, path: '/:username' },
     { name: 'Discover', icon: Compass, path: '/discover' },
   ];
 

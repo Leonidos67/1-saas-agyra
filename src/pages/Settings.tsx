@@ -1,13 +1,12 @@
 // pages/Settings.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   User, Edit, Users, Link as LinkIcon, Shield, 
   ShoppingBag, Bell, CreditCard, 
-  AlertCircle, LogOut, ChevronRight,
-  Camera, MapPin, House, Compass, MessageCircle,
-  Search
+  AlertCircle,
+  Camera, MapPin
 } from 'lucide-react';
 
 const Settings: React.FC = () => {

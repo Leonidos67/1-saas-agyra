@@ -62,11 +62,16 @@ router.post('/', auth, async (req, res) => {
 // GET /api/posts/:id - Получить конкретный пост
 router.get('/:id', async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
-      .populate('author', 'username fullName avatar followersCount');
-
+    const post = await Post.findById(req.params.id);
+    
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const author = await User.findById(post.author).select('username fullName avatar');
+    
+    if (!author) {
+      return res.status(404).json({ message: 'Author not found' });
     }
 
     // Добавляем просмотр
@@ -76,7 +81,21 @@ router.get('/:id', async (req, res) => {
     }
 
     const postData = {
-      ...post.toJSON(),
+      _id: post._id,
+      content: post.content,
+      author: {
+        _id: author._id.toString(),
+        username: author.username,
+        fullName: author.fullName || author.username,
+        avatar: author.avatar || ''
+      },
+      media: post.media || [],
+      likesCount: post.likesCount || 0,
+      commentsCount: post.commentsCount || 0,
+      repostsCount: post.repostsCount || 0,
+      viewsCount: post.viewsCount || 0,
+      createdAt: post.createdAt,
+      // ВАЖНО: проверяем для текущего пользователя
       isLiked: req.userId ? post.likes.includes(req.userId) : false,
       isReposted: req.userId ? post.reposts.includes(req.userId) : false,
       isBookmarked: req.userId ? post.bookmarks.includes(req.userId) : false
@@ -153,21 +172,9 @@ router.post('/:id/like', auth, async (req, res) => {
 
     const liked = await post.toggleLike(req.userId);
     
-    // Обновляем populated post
-    const updatedPost = await Post.findById(post._id)
-      .populate('author', 'username fullName avatar');
-
-    const postData = {
-      ...updatedPost.toJSON(),
-      isLiked: liked,
-      isReposted: req.userId ? updatedPost.reposts.includes(req.userId) : false,
-      isBookmarked: req.userId ? updatedPost.bookmarks.includes(req.userId) : false
-    };
-
     res.json({ 
       liked,
-      likesCount: post.likesCount,
-      post: postData
+      likesCount: post.likesCount
     });
   } catch (error) {
     console.error('Like error:', error);
@@ -236,14 +243,32 @@ router.get('/', async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .limit(20)
-      .populate('author', 'username fullName avatar');
+      .limit(20);
 
-    const postsData = posts.map(post => ({
-      ...post.toJSON(),
-      isLiked: req.userId ? post.likes.includes(req.userId) : false,
-      isReposted: req.userId ? post.reposts.includes(req.userId) : false,
-      isBookmarked: req.userId ? post.bookmarks.includes(req.userId) : false
+    // Ручное заполнение авторов для каждого поста
+    const postsData = await Promise.all(posts.map(async (post) => {
+      const author = await User.findById(post.author).select('username fullName avatar');
+      
+      return {
+        _id: post._id,
+        content: post.content,
+        author: author ? {
+          _id: author._id.toString(),
+          username: author.username,
+          fullName: author.fullName || author.username,
+          avatar: author.avatar || ''
+        } : null,
+        media: post.media || [],
+        likesCount: post.likesCount || 0,
+        commentsCount: post.commentsCount || 0,
+        repostsCount: post.repostsCount || 0,
+        viewsCount: post.viewsCount || 0,
+        createdAt: post.createdAt,
+        // ВАЖНО: проверяем, лайкнул ли текущий пользователь этот пост
+        isLiked: req.userId ? post.likes.includes(req.userId) : false,
+        isReposted: req.userId ? post.reposts.includes(req.userId) : false,
+        isBookmarked: req.userId ? post.bookmarks.includes(req.userId) : false
+      };
     }));
 
     res.json(postsData);

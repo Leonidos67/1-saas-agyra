@@ -52,7 +52,7 @@ function App() {
           
           {/* Профиль пользователя */}
           <Route path="/:username" element={<AppLayout><UserProfile /></AppLayout>} />
-          <Route path="/post/:postId" element={<AppLayout><PostPage /></AppLayout>} />
+          <Route path="/post/:postId" element={<PostPage />} />
           
           {/* Страница 404 для всего остального */}
           <Route path="*" element={<NotFound />} />

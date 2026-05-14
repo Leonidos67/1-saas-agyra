@@ -2,11 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  MessageCircle, Repeat2, Heart, Share,
-  ArrowLeft, MoreHorizontal, BarChart3,
-  Calendar, MapPin, Link as LinkIcon
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api/posts';
 
@@ -18,21 +14,15 @@ interface Post {
     username: string;
     fullName: string;
     avatar: string;
-    followersCount: number;
   };
-  likes: string[];
   likesCount: number;
-  comments: any[];
   commentsCount: number;
-  reposts: string[];
   repostsCount: number;
   viewsCount: number;
-  bookmarksCount: number;
   media: string[];
   createdAt: string;
   isLiked: boolean;
   isReposted: boolean;
-  isBookmarked: boolean;
 }
 
 const PostPage: React.FC = () => {
@@ -43,8 +33,6 @@ const PostPage: React.FC = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isReposted, setIsReposted] = useState(false);
 
   useEffect(() => {
     if (postId) {
@@ -52,93 +40,75 @@ const PostPage: React.FC = () => {
     }
   }, [postId]);
 
-  const fetchPost = async (id: string) => {
+  // В PostPage.tsx, после получения данных:
+    const fetchPost = async (id: string) => {
     try {
-      setLoading(true);
-      const headers: Record<string, string> = {};
-      if (token) {
+        setLoading(true);
+        const headers: Record<string, string> = {};
+        if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      }
+        }
 
-      const res = await fetch(`${API_URL}/${id}`, { headers });
-      
-      if (!res.ok) {
+        const res = await fetch(`${API_URL}/${id}`, { headers });
+        
+        if (!res.ok) {
         if (res.status === 404) {
-          setError('Post not found');
+            setError('Post not found');
         } else {
-          setError('Failed to load post');
+            setError('Failed to load post');
         }
         return;
-      }
+        }
 
-      const data = await res.json();
-      setPost(data);
-      setIsLiked(data.isLiked);
-      setIsReposted(data.isReposted);
+        const data = await res.json();
+        
+        // Если author - это строка (ID), подгружаем данные пользователя
+        if (typeof data.author === 'string') {
+        try {
+            const userRes = await fetch(`http://localhost:5000/api/users/${data.author}`, { headers });
+            if (userRes.ok) {
+            const userData = await userRes.json();
+            data.author = {
+                _id: userData._id,
+                username: userData.username,
+                fullName: userData.fullName,
+                avatar: userData.avatar
+            };
+            }
+        } catch (err) {
+            console.error('Failed to fetch author:', err);
+            data.author = {
+            _id: data.author,
+            username: 'unknown',
+            fullName: 'Unknown User',
+            avatar: ''
+            };
+        }
+        }
+        
+        setPost(data);
     } catch (err) {
-      console.error('Fetch post error:', err);
-      setError('Failed to load post');
+        console.error('Fetch post error:', err);
+        setError('Failed to load post');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
 
-  const handleLike = async () => {
-    if (!token || !post) return;
-    
-    try {
-      const res = await fetch(`${API_URL}/${post._id}/like`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setIsLiked(data.liked);
-        setPost(prev => prev ? { ...prev, likesCount: data.likesCount } : null);
-      }
-    } catch (err) {
-      console.error('Like error:', err);
-    }
-  };
-
-  const handleRepost = async () => {
-    if (!token || !post) return;
-    
-    try {
-      const res = await fetch(`${API_URL}/${post._id}/repost`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setIsReposted(data.reposted);
-        setPost(prev => prev ? { ...prev, repostsCount: data.repostsCount } : null);
-      }
-    } catch (err) {
-      console.error('Repost error:', err);
-    }
-  };
-
-  const copyLink = () => {
-    const link = window.location.href;
-    navigator.clipboard.writeText(link).then(() => {
-      alert('Link copied!');
-    }).catch(() => {
-      prompt('Copy this link:', link);
-    });
-  };
-
-  const formatDate = (dateString: string) => {
+  const formatPostDate = (dateString: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (minutes < 1) return 'now';
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const formatCount = (count: number) => {
@@ -166,109 +136,95 @@ const PostPage: React.FC = () => {
     );
   }
 
+  // Защита от отсутствия данных автора
+  const author = post.author || { username: 'unknown', fullName: 'Unknown User', avatar: '', _id: '' };
+  const authorUsername = author.username || 'unknown';
+  const authorFullName = author.fullName || authorUsername;
+  const authorAvatar = author.avatar || `https://ui-avatars.com/api/?name=${authorFullName}&background=000&color=fff&size=40&bold=true`;
+
   return (
     <div className="max-w-[600px] mx-auto border-x border-neutral-200 min-h-screen">
-      {/* Header */}
+      {/* Header с логотипом */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-neutral-200">
-        <div className="flex items-center gap-4 px-4 py-3">
-          <button onClick={() => navigate(-1)} className="p-1 hover:bg-neutral-100 rounded-full">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
+          >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-lg font-bold">Post</h1>
+          
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src="https://img.icons8.com/?size=100&id=ck3ZwyamgGAW&format=png&color=000000"
+              className="w-8 h-8"
+              alt="MNOONX"
+            />
+            <span className="text-xl font-bold text-gray-900 pixelify-logo">
+              MNOONX
+            </span>
+          </Link>
+          
+          <div className="w-10"></div>
         </div>
       </div>
 
       {/* Post Content */}
-      <article className="p-4">
+      <article className="p-4 border-b border-neutral-200">
         {/* Author Info */}
-        <div className="flex items-center gap-3 mb-4">
-          <Link to={`/@${post.author.username}`}>
+        <div className="flex space-x-3 mb-3">
+          <Link to={`/@${authorUsername}`}>
             <img
-              src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.fullName}&background=000&color=fff&size=48`}
-              alt={post.author.fullName}
-              className="w-12 h-12 rounded-full"
+              src={authorAvatar}
+              alt={authorFullName}
+              className="w-10 h-10 rounded-full hover:opacity-90 transition-opacity"
             />
           </Link>
-          <div>
-            <Link to={`/@${post.author.username}`} className="font-bold hover:underline">
-              {post.author.fullName}
-            </Link>
-            <p className="text-neutral-500">@{post.author.username}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1 flex-wrap">
+              <Link 
+                to={`/@${authorUsername}`} 
+                className="font-bold hover:underline truncate text-neutral-900"
+              >
+                {authorFullName}
+              </Link>
+              <span className="text-neutral-500 truncate">@{authorUsername}</span>
+              <span className="text-neutral-500">·</span>
+              <span className="text-neutral-500 whitespace-nowrap">{formatPostDate(post.createdAt)}</span>
+            </div>
+
+            {/* Content */}
+            <p className="mt-2 text-neutral-900 leading-relaxed whitespace-pre-wrap break-words text-[15px]">
+              {post.content}
+            </p>
+
+            {/* Media */}
+            {post.media && post.media.length > 0 && (
+              <div className="mt-3 rounded-2xl overflow-hidden border border-neutral-200">
+                <img
+                  src={post.media[0]}
+                  alt="post media"
+                  className="w-full max-h-96 object-cover"
+                />
+              </div>
+            )}
+
+            {/* Stats - только цифры без иконок и кнопок */}
+            <div className="flex items-center gap-6 mt-4 pt-3 border-t border-neutral-100 text-sm">
+              <div>
+                <span className="font-bold text-neutral-900">{formatCount(post.repostsCount || 0)}</span>
+                <span className="text-neutral-500 ml-1">Reposts</span>
+              </div>
+              <div>
+                <span className="font-bold text-neutral-900">{formatCount(post.likesCount || 0)}</span>
+                <span className="text-neutral-500 ml-1">Likes</span>
+              </div>
+              <div>
+                <span className="font-bold text-neutral-900">{formatCount(post.commentsCount || 0)}</span>
+                <span className="text-neutral-500 ml-1">Comments</span>
+              </div>
+            </div>
           </div>
-          <button className="ml-auto p-1 hover:bg-neutral-100 rounded-full">
-            <MoreHorizontal size={18} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <p className="text-lg text-neutral-900 leading-relaxed whitespace-pre-wrap break-words mb-4">
-          {post.content}
-        </p>
-
-        {/* Media */}
-        {post.media && post.media.length > 0 && (
-          <div className="rounded-2xl overflow-hidden border border-neutral-200 mb-4">
-            <img
-              src={post.media[0]}
-              alt="post media"
-              className="w-full object-cover"
-            />
-          </div>
-        )}
-
-        {/* Timestamp & Views */}
-        <div className="flex items-center gap-2 text-neutral-500 text-sm mb-4 pb-4 border-b border-neutral-200">
-          <span>{formatDate(post.createdAt)}</span>
-          <span>·</span>
-          <span>{formatCount(post.viewsCount)} Views</span>
-        </div>
-
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm py-4 border-b border-neutral-200">
-          <button className="hover:underline">
-            <span className="font-bold">{formatCount(post.repostsCount)}</span>
-            <span className="text-neutral-500 ml-1">Reposts</span>
-          </button>
-          <button className="hover:underline">
-            <span className="font-bold">{formatCount(post.likesCount)}</span>
-            <span className="text-neutral-500 ml-1">Likes</span>
-          </button>
-          <button className="hover:underline">
-            <span className="font-bold">{formatCount(post.bookmarksCount)}</span>
-            <span className="text-neutral-500 ml-1">Bookmarks</span>
-          </button>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-around items-center py-3 border-b border-neutral-200">
-          <button className="flex items-center gap-2 text-neutral-500 hover:text-blue-500 transition-colors">
-            <MessageCircle size={20} />
-          </button>
-          <button 
-            onClick={handleRepost}
-            className={`flex items-center gap-2 transition-colors ${
-              isReposted ? 'text-green-500' : 'text-neutral-500 hover:text-green-500'
-            }`}
-          >
-            <Repeat2 size={20} fill={isReposted ? 'currentColor' : 'none'} />
-          </button>
-          <button 
-            onClick={handleLike}
-            className={`flex items-center gap-2 transition-colors ${
-              isLiked ? 'text-red-500' : 'text-neutral-500 hover:text-red-500'
-            }`}
-          >
-            <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
-          </button>
-          <button className="flex items-center gap-2 text-neutral-500 hover:text-blue-500 transition-colors">
-            <BarChart3 size={20} />
-          </button>
-          <button 
-            onClick={copyLink}
-            className="flex items-center gap-2 text-neutral-500 hover:text-blue-500 transition-colors"
-          >
-            <Share size={20} />
-          </button>
         </div>
       </article>
     </div>
